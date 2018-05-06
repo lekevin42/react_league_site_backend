@@ -1,23 +1,35 @@
 //server.js
 'use strict'
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').load();
+}
 //first we import our dependencies…
-var express = require('express');
+const express = require('express');
+const cors = require('cors');
 //var mongoose = require('mongoose');
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 //and create our instances
-var app = express();
-var router = express.Router();
-var cors = require('cors')
+const app = express();
+//var router = express.Router();
+const router = require('express').Router();
+
+
+
 app.use(cors())
-//set our port to either a predetermined port number if you have set
-//it up, or 3001
-var port = process.env.API_PORT || 3001;
+
+
+
 //now we should configure the API to use bodyParser and look for
 //JSON data in the request body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.use(require('method-override')());
+app.use(express.static(__dirname + '/public'));
 //To prevent errors from Cross Origin Resource Sharing, we will set
 //our headers to allow CORS with middleware like so:
+
+
 app.use(function(req, res, next) {
  res.setHeader('Access-Control-Allow-Origin', '*');
  res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -27,6 +39,7 @@ app.use(function(req, res, next) {
  res.setHeader('Cache-Control', 'no-cache');
  next();
 });
+app.use(require('./routes'));
 //now we can set the route path & initialize the API
 router.get('/', function(req, res) {
  res.json({ message: 'API Initialized!'});
@@ -34,6 +47,8 @@ router.get('/', function(req, res) {
 //Use our router configuration when we call /api
 app.use('/api', router);
 //starts the server and listens for requests
-app.listen(port, function() {
- console.log(`api running on port ${port}`);
+
+
+const server = app.listen(process.env.PORT || 3001, function () {
+    console.log('Listening on port ' + server.address().port);
 });

@@ -12,7 +12,7 @@ const bodyParser = require('body-parser');
 const app = express();
 //var router = express.Router();
 const router = require('express').Router();
-
+const mongoose = require('mongoose');
 var RateLimit = require('express-rate-limit');
 
 //app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc)
@@ -50,6 +50,11 @@ app.use(function(req, res, next) {
  res.setHeader('Cache-Control', 'no-cache');
  next();
 });
+
+require('./models/champions/ChampionHeader');
+require('./models/champions/Champion');
+require('./models/champions/ChampionStats');
+
 app.use(require('./routes'));
 //now we can set the route path & initialize the API
 router.get('/', function(req, res) {
@@ -58,6 +63,10 @@ router.get('/', function(req, res) {
 //Use our router configuration when we call /api
 app.use('/api', router);
 //starts the server and listens for requests
+
+
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost/league_site_mongo');
 
 
 const server = app.listen(process.env.PORT || 3001, function () {

@@ -52,8 +52,9 @@ app.use(function(req, res, next) {
 });
 
 require('./models/champions/ChampionHeader');
-require('./models/champions/Champion');
+require('./models/champions/Champions');
 require('./models/champions/ChampionStats');
+require('./models/champions/ChampionSpells');
 
 app.use(require('./routes'));
 //now we can set the route path & initialize the API

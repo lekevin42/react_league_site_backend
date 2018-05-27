@@ -4,6 +4,7 @@ const router = require('express').Router();
 const ChampionHeader = mongoose.model('ChampionHeader');
 const Champion = mongoose.model('Champion');
 const ChampionStats = mongoose.model('ChampionStats');
+const ChampionSpells = mongoose.model('ChampionSpells');
 
 router.get('/singlechampion/:ObjectId', (req, res, next) => {
 
@@ -18,7 +19,9 @@ router.get('/champions/all', (req, res, next) => {
 
     let championHeader = new ChampionHeader();
 
-    //championHeader.championData = championData;
+    championHeader.championData = championData.data;
+    championHeader.keys = championData.keys;
+    championHeader.version = championData.version;
     //console.log(champion);
 
 
@@ -26,23 +29,10 @@ router.get('/champions/all', (req, res, next) => {
       let champion = new Champion();
       let championStats = new ChampionStats();
 
-
-      champion.allyTips = championData.data[champKey].allytips;
-      champion.blurb = championData.data[champKey].blurb;
-      champion.enemyTips = championData.data[champKey].enemytips;
-      champion.id = championData.data[champKey].id;
-      /*
-      image
-      info
-
-      */
-      champion.key = championData.data[champKey].key;
-      champion.lore = championData.data[champKey].lore;
-      champion.name = championData.data[champKey].name;
-      champion.parType = championData.data[champKey].partype;
+      let championSpellsList = [];
 
 
-      /* Champion Stats Section */
+      /* Begin Champion Stats Section */
       championStats.armor = championData.data[champKey].stats.armor;
       championStats.armorPerLevel = championData.data[champKey].stats.armorperlevel;
       championStats.attackDamage = championData.data[champKey].stats.attackdamage;
@@ -63,13 +53,62 @@ router.get('/champions/all', (req, res, next) => {
 
       championStats.save();
 
+      /* End Champion Stats Section */
+
+
+      /* Begin Champion Spells Section */
+
+      const {spells} = championData.data[champKey];
+
+      spells.forEach((spell) => {
+        let championSpells = new ChampionSpells();
+
+        championSpells.cooldown = spell.cooldown;
+        championSpells.cooldownBurn = spell.cooldownBurn;
+        championSpells.cost = spell.cost;
+        championSpells.costBurn = spell.costBurn;
+        championSpells.costType = spell.costType;
+        championSpells.description = spell.description;
+        championSpells.effect = spell.effect;
+        championSpells.effectBurn = spell.effectBurn;
+        championSpells.key = spell.key;
+        championSpells.maxRank = spell.maxrank;
+        championSpells.name = spell.name;
+        championSpells.range = spell.range;
+        championSpells.rangeBurn = spell.rangeBurn;
+        championSpells.resource = spell.resource;
+        championSpells.sanitizedDescription = spell.sanitizedDescription;
+        championSpells.sanitizedTooltip = spell.sanitizedTooltip;
+        championSpells.tooltip = spell.tooltip;
+        championSpells.vars = spell.vars;
+
+        championSpellsList.push(championSpells);
+        championSpells.save();
+      });
+
+
+
+      /* End Champion Spells Section */
+
+
+      /* Begin Champion Section */
+      champion.allyTips = championData.data[champKey].allytips;
+      champion.blurb = championData.data[champKey].blurb;
+      champion.enemyTips = championData.data[champKey].enemytips;
+      champion.id = championData.data[champKey].id;
+      champion.key = championData.data[champKey].key;
+      champion.lore = championData.data[champKey].lore;
+      champion.name = championData.data[champKey].name;
+      champion.spells = championSpellsList;
+      champion.stats = championStats;
+      champion.parType = championData.data[champKey].partype;
       champion.tags = championData.data[champKey].tags;
       champion.title = championData.data[champKey].title;
 
-
-
-
       champion.save();
+      championHeader.save();
+
+      /* End Champion Section */
 
     });
     return res.status(200).json({
@@ -78,39 +117,27 @@ router.get('/champions/all', (req, res, next) => {
             header: championHeader
         }
     });
-    /*
-    champion.allyTips = championData.data.allytips;
-    champion.blurb = championData.data.blurb;
-    champion.enemyTips = championData.data.enemytips;
-    champion.id = championData.data.id;
-    //champion.markModified(championData);
-
-    champion.save();/*  function (err) {
-      console.log(err);
-
-      championHeader.championData = champion;
-
-
-
-      championHeader.version = championData.version;
-      championHeader.keys = championData.keys;
-      championHeader.save(function (err) {
-        console.log(err);
-        //return res.json({championData: championHeader});
-        return res.status(200).json({
-            success: {
-                data: championData,
-                header: championHeader
-            }
-        });
-      });
-
-    })
-*/
-
-
-//return res.json({championData: championHeader});
   }).catch(next);
+});
+
+router.delete('/champions/deleteall', (req, res, next) => {
+  ChampionStats.remove({}, function(err) {
+    if (err) return res.status(501);
+  });
+
+  ChampionSpells.remove({}, function(err){
+    if (err) return res.status(501);
+  });
+
+  Champion.remove({}, function(err){
+    if (err) return res.status(501);
+  });
+
+  ChampionHeader.remove({}, function(err){
+    if (err) return res.status(501);
+  });
+
+  return res.json({'e':'a'});
 });
 
 

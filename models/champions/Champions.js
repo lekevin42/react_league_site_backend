@@ -14,6 +14,7 @@ const ChampionSchema = new mongoose.Schema({
   passive: {},
   recommended:String,
   skins: String,
+  spells: [{type: mongoose.Schema.Types.ObjectId, ref: 'ChampionSpells'}],
   stats: {type: mongoose.Schema.Types.ObjectId, ref: 'ChampionStats'},
   tags: [String],
   title: String

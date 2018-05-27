@@ -137,7 +137,11 @@ router.delete('/champions/deleteall', (req, res, next) => {
     if (err) return res.status(501);
   });
 
-  return res.json({'e':'a'});
+  return res.status(200).json({
+      success: {
+          
+      }
+  });
 });
 
 

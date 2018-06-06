@@ -6,8 +6,25 @@ const Champion = mongoose.model('Champion');
 const ChampionStats = mongoose.model('ChampionStats');
 const ChampionSpells = mongoose.model('ChampionSpells');
 
-router.get('/singlechampion/:ObjectId', (req, res, next) => {
+router.get('/champions/championheader', (req, res, next) => {
+  ChampionHeader.find({}, function(err, championHeader){
+    if (err){
+      return res.status(200).json({
+          success: {
+              data: championData,
+              header: championHeader
+          }
+      });
+    }
+    return res.status(200).json({
+        success: {
+            header: championHeader
+        }
+    });
+  });
+});
 
+router.get('/singlechampion/:ObjectId', (req, res, next) => {
   api.Champions.getSingleChampion(req.params.ObjectId).then((championData) => {
     return res.json({championData: championData});
   }).catch(next);
@@ -15,14 +32,10 @@ router.get('/singlechampion/:ObjectId', (req, res, next) => {
 
 router.get('/champions/all', (req, res, next) => {
   api.Champions.getAllChampions().then((championData) => {
-
-
     let championHeader = new ChampionHeader();
 
-    championHeader.championData = championData.data;
     championHeader.keys = championData.keys;
     championHeader.version = championData.version;
-    //console.log(champion);
 
 
     Object.keys(championData.data).forEach((champKey) => {
@@ -82,7 +95,8 @@ router.get('/champions/all', (req, res, next) => {
         championSpells.tooltip = spell.tooltip;
         championSpells.vars = spell.vars;
 
-        championSpellsList.push(championSpells);
+        //championSpellsList.push(championSpells);
+        champion.spells.push(championSpells);
         championSpells.save();
       });
 
@@ -99,18 +113,21 @@ router.get('/champions/all', (req, res, next) => {
       champion.key = championData.data[champKey].key;
       champion.lore = championData.data[champKey].lore;
       champion.name = championData.data[champKey].name;
-      champion.spells = championSpellsList;
       champion.stats = championStats;
       champion.parType = championData.data[champKey].partype;
       champion.tags = championData.data[champKey].tags;
       champion.title = championData.data[champKey].title;
 
       champion.save();
-      championHeader.save();
+
+      championHeader.championData.push(champion);
+
+
 
       /* End Champion Section */
-
     });
+
+    championHeader.save();
     return res.status(200).json({
         success: {
             data: championData,
@@ -139,7 +156,7 @@ router.delete('/champions/deleteall', (req, res, next) => {
 
   return res.status(200).json({
       success: {
-          
+
       }
   });
 });
